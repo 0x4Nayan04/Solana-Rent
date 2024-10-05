@@ -1,39 +1,59 @@
-import React, { useState } from 'react'
-import { Calculator, Sun, Moon } from 'lucide-react'
+import React, { useState } from "react";
+import { Calculator, Sun, Moon } from "lucide-react";
 
 // Constants for Solana rent calculation
-const LAMPORTS_PER_SOL = 1000000000
-const RENT_EXEMPTION_THRESHOLD = 2 * 365 * 24 * 60 * 60 // 2 years in seconds
-const RENT_PER_BYTE_YEAR = 3480 // lamports
-const ACCOUNT_STORAGE_OVERHEAD = 128 // bytes
+const LAMPORTS_PER_SOL = 1000000000;
+const RENT_EXEMPTION_THRESHOLD = 2 * 365 * 24 * 60 * 60; // 2 years in seconds
+const RENT_PER_BYTE_YEAR = 3480; // lamports
+const ACCOUNT_STORAGE_OVERHEAD = 128; // bytes
 
 function calculateRentExemptionThreshold(dataSize: number): number {
-  const accountSize = dataSize + ACCOUNT_STORAGE_OVERHEAD
-  const rentPerYear = RENT_PER_BYTE_YEAR * accountSize
-  return Math.ceil((rentPerYear * RENT_EXEMPTION_THRESHOLD) / (365 * 24 * 60 * 60))
+  const accountSize = dataSize + ACCOUNT_STORAGE_OVERHEAD;
+  const rentPerYear = RENT_PER_BYTE_YEAR * accountSize;
+  return Math.ceil(
+    (rentPerYear * RENT_EXEMPTION_THRESHOLD) / (365 * 24 * 60 * 60)
+  );
 }
 
 function App() {
-  const [dataSize, setDataSize] = useState<number>(0)
-  const [rentExempt, setRentExempt] = useState<number | null>(null)
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false)
+  const [dataSize, setDataSize] = useState<string>("");
+  const [rentExempt, setRentExempt] = useState<number | null>(null);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
 
   const calculateRent = () => {
-    const minBalance = calculateRentExemptionThreshold(dataSize)
-    setRentExempt(minBalance / LAMPORTS_PER_SOL)
-  }
+    const size = parseInt(dataSize, 10);
+    if (!isNaN(size)) {
+      const minBalance = calculateRentExemptionThreshold(size);
+      setRentExempt(minBalance / LAMPORTS_PER_SOL);
+    } else {
+      setRentExempt(null);
+    }
+  };
 
   const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode)
-  }
+    setIsDarkMode(!isDarkMode);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === "" || /^\d+$/.test(value)) {
+      setDataSize(value);
+    }
+  };
 
   return (
-    <div className={`min-h-screen flex items-center justify-center transition-all duration-500 ${isDarkMode ? 'dark bg-gray-900' : 'bg-gradient'}`}>
+    <div
+      className={`min-h-screen flex items-center justify-center transition-all duration-500 ${
+        isDarkMode ? "dark bg-gray-900" : "bg-gradient"
+      }`}
+    >
       <div className="card p-8 w-full max-w-md mx-4 transition-all duration-500">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center">
             <Calculator className="w-8 h-8 mr-2 text-indigo-600 dark:text-indigo-400" />
-            <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Solana Rent</h1>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+              Solana Rent
+            </h1>
           </div>
           <button
             onClick={toggleTheme}
@@ -43,16 +63,20 @@ function App() {
           </button>
         </div>
         <div className="mb-6">
-          <label htmlFor="dataSize" className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
+          <label
+            htmlFor="dataSize"
+            className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300"
+          >
             Account Data Size (bytes):
           </label>
           <input
-            type="number"
+            type="text"
             id="dataSize"
             value={dataSize}
-            onChange={(e) => setDataSize(Number(e.target.value))}
+            onChange={handleInputChange}
             className="input-field w-full px-4 py-2 rounded-lg text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-300"
-            min="0"
+            inputMode="numeric"
+            pattern="\d*"
           />
         </div>
         <button
@@ -70,7 +94,7 @@ function App() {
         )}
       </div>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
